@@ -1,0 +1,28 @@
+#!/usr/bin/env node
+
+const path = require('path')
+const OSS = require('ali-oss')
+const client = new OSS({
+  region: 'your region', // like oss-cn-shenzhen
+  accessKeyId: 'your accesskey id',
+  accessKeySecret: 'your accesskey secret',
+  bucket: 'your bucket name'
+})
+
+main().then(console.log).catch(console.error)
+
+async function main () {
+  let filepath = process.argv[2] || ''
+  filepath = filepath.trim()
+  if (!filepath) throw 'missing image path!'
+  const format = filepath.split('.').pop()
+  const newname = Date.now() + '.' + format
+  const pwd = process.cwd()
+  filepath = path.resolve(pwd, filepath)
+  return upload({filepath, newname})
+}
+
+async function upload ({filepath, newname}) {
+  const {url} = await client.put(newname, filepath)
+  return url.replace('http://', 'https://')
+}
